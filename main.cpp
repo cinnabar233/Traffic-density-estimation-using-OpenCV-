@@ -9,12 +9,19 @@ using namespace std;
 
 vector<Point2f> pts_src,pts_dst;
 
+Mat image_src ; // original image
+Mat image_proj ; // image after homogographic projection;
+Mat image_crop ; // cropped image
+Mat image_src_1;
+string window_src  , window_proj, window_crop ;
 
 void callbackfnc(int event,int x,int y,int flags,void *userdata)
 {
     if(event == EVENT_LBUTTONDOWN){
         // clicked points
         pts_src.push_back(Point2f(x,y));
+        circle(image_src_1 , Point(x,y) , 16 , Scalar(255,0,0) ,FILLED, 8) ; // to draw a circle at the clicked points
+        imshow(window_src,image_src_1);
     }
 
 }
@@ -36,24 +43,22 @@ void save_error(string name )
 int main(int argc, char** argv)
 {
     
-    Mat image_src = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
-    Mat image_proj ; // image after homogographic projection;
-    Mat image_crop ; // cropped image
-    
+    image_src = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
+    image_src_1 = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
     if(image_src.empty())
     {
         cout<<"Source image not found"<<endl;
         cin.get();  return -1;
     }
 
-    string window_src = "Original "+string(argv[1]) , window_proj= "Transformed "+string(argv[1]) , window_crop = "Cropped "+string(argv[1]);
+    window_src = "Original "+string(argv[1]) ;  window_proj= "Transformed "+string(argv[1]) ; window_crop = "Cropped "+string(argv[1]);
 
     namedWindow(window_src); 
-
+    
     setMouseCallback(window_src,callbackfnc,NULL);
-    imshow(window_src,image_src);
+    imshow(window_src,image_src_1);
     waitKey(0);
-    for(Point2f p : pts_src) circle(image_src , Point(p.x,p.y) , 16 , Scalar(255,0,0) ,FILLED, 8) ; // to draw a circle at the clicked points
+    //for(Point2f p : pts_src) circle(image_src , Point(p.x,p.y) , 16 , Scalar(255,0,0) ,FILLED, 8) ; // to draw a circle at the clicked points
     destroyWindow(window_src);
    
    
