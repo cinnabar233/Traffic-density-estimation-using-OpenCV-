@@ -18,50 +18,64 @@ void callbackfnc(int event,int x,int y,int flags,void *userdata)
     }
 
 }
-
+/* to display and save the image*/
+bool display_and_save( string window_name , Mat image)
+{
+    imshow(window_name , image);
+    waitKey(0);
+    destroyWindow(window_name);
+    return imwrite(window_name + string(".jpg") , image);
+    
+}
+/* printing error message*/
+void save_error(string name )
+{
+    cout<<"The image "+ name + " could not be saved\n" ;
+    cin.get();
+}
 int main(int argc, char** argv)
 {
-    Mat image_src = imread("/Users/abhinavjain/Desktop/cop290/COP290-Assignment-1-/empty.jpg",IMREAD_GRAYSCALE);
-    Mat image_proj,image_crop;
-
-    if(image_src.empty()){
-        cout<<"image_src not found"<<endl;
+    
+    Mat image_src = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
+    Mat image_proj ; // image after homogographic projection;
+    Mat image_crop ; // cropped image
+    
+    if(image_src.empty())
+    {
+        cout<<"Source image not found"<<endl;
         cin.get();  return -1;
     }
 
-    string window_src = "original frame";
-    string window_proj= "projected frame";
-    string window_crop = "cropped frame";
+    string window_src = "Original "+string(argv[1]) , window_proj= "Transformed "+string(argv[1]) , window_crop = "Cropped "+string(argv[1]);
 
     namedWindow(window_src); 
 
     setMouseCallback(window_src,callbackfnc,NULL);
     imshow(window_src,image_src);
     waitKey(0);
+    for(Point2f p : pts_src) circle(image_src , Point(p.x,p.y) , 16 , Scalar(255,0,0) ,FILLED, 8) ; // to draw a circle at the clicked points
     destroyWindow(window_src);
    
-   // destination points where the corners of main road are mapped to.
-    // better points can be chosen
+   
     pts_dst.push_back(Point2f(831,211));
-    pts_dst.push_back(Point2f(831,1078));
+    pts_dst.push_back(Point2f(831,1078));              // destination points where the corners of main road are mapped to, better points can be chosen
     pts_dst.push_back(Point2f(1375,1078));
     pts_dst.push_back(Point2f(1375,211));
     
-    
-    Mat h =findHomography(pts_src,pts_dst);
+    Mat h =findHomography(pts_src,pts_dst);  // returns the homographic matrix
     warpPerspective(image_src,image_proj, h,image_src.size());
-
-    imshow(window_proj,image_proj);
-    waitKey(0);
-    destroyWindow(window_proj);
-
+    
+    if( !display_and_save(window_proj,image_proj) ) {
+        save_error(window_proj) ; return -1;
+    }
+    
     Rect roi(831,211,544,867);
     image_crop = image_proj(roi);
-
-    imshow(window_crop,image_crop);
-    waitKey(0);
-    destroyWindow(window_crop);
-
+    
+    if( !display_and_save(window_crop,image_crop) ) {
+        save_error(window_crop) ; return -1;
+    }
+    
     return 0;
 }
 
