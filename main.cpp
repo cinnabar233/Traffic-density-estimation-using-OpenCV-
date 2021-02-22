@@ -17,7 +17,12 @@ string window_src  , window_proj, window_crop ;
 
 void callbackfnc(int event,int x,int y,int flags,void *userdata)
 {
-    if(event == EVENT_LBUTTONDOWN){
+    if(flags == (EVENT_FLAG_CTRLKEY + EVENT_FLAG_LBUTTON)){
+        pts_src.clear();
+        image_src_1=image_src.clone();
+        imshow(window_src,image_src_1);
+    }
+    else if(event == EVENT_LBUTTONDOWN){
         // clicked points
         pts_src.push_back(Point2f(x,y));
         circle(image_src_1 , Point(x,y) , 16 , Scalar(255,0,0) ,FILLED, 8) ; // to draw a circle at the clicked points
@@ -44,7 +49,8 @@ int main(int argc, char** argv)
 {
     
     image_src = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
-    image_src_1 = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
+   // image_src_1 = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
+    image_src_1=image_src.clone();
     if(image_src.empty())
     {
         cout<<"Source image not found"<<endl;
