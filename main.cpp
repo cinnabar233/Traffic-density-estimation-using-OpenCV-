@@ -22,7 +22,7 @@ void callbackfnc(int event,int x,int y,int flags,void *userdata)
         image_src_1=image_src.clone();
         imshow(window_src,image_src_1);
     }
-    else if(event == EVENT_LBUTTONDOWN){
+    else if(event == EVENT_LBUTTONDOWN && (pts_src.size()<4)){
         // clicked points
         pts_src.push_back(Point2f(x,y));
         circle(image_src_1 , Point(x,y) , 16 , Scalar(0,0,0) ,FILLED, 8) ; // to draw a circle at the clicked points
