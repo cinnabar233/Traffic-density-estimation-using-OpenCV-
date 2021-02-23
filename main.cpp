@@ -3,6 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <algorithm>
 
 using namespace cv;
 using namespace std;
@@ -30,6 +31,22 @@ void callbackfnc(int event,int x,int y,int flags,void *userdata)
     }
 
 }
+
+/*sort the pts in anti-clockwise order starting from top-left pt */
+void sort_inputpts(vector<Point2f> &pts_src)
+{
+    sort(pts_src.begin(),pts_src.end(),[](const cv::Point2f &a, const cv::Point2f &b){
+        return a.y<b.y ;
+    });        // sort pts by y co-ordinate
+    
+    if(pts_src[0].x>pts_src[1].x){
+        swap(pts_src[0],pts_src[1]);
+    }
+    if(pts_src[2].x<pts_src[3].x){
+        swap(pts_src[2],pts_src[3]);
+    }
+}
+
 /* to display and save the image*/
 bool display_and_save( string window_name , Mat image)
 {
@@ -59,7 +76,7 @@ int main(int argc, char** argv)
 
     window_src = "Original "+string(argv[1]) ;  window_proj= "Transformed "+string(argv[1]) ; window_crop = "Cropped "+string(argv[1]);
 
-    namedWindow(window_src); 
+    namedWindow(window_src);
     
     setMouseCallback(window_src,callbackfnc,NULL);
     imshow(window_src,image_src_1);
@@ -68,10 +85,12 @@ int main(int argc, char** argv)
     destroyWindow(window_src);
    
    
-    pts_dst.push_back(Point2f(831,211));
-    pts_dst.push_back(Point2f(831,1078));              // destination points where the corners of main road are mapped to, better points can be chosen
-    pts_dst.push_back(Point2f(1375,1078));
+    pts_dst.push_back(Point2f(831,211));        // destination points where the corners of main road are mapped to, better points can be chosen
     pts_dst.push_back(Point2f(1375,211));
+    pts_dst.push_back(Point2f(1375,1078));
+    pts_dst.push_back(Point2f(831,1078));
+    
+    sort_inputpts(pts_src);     // sort the inputs in anti-clockwise order starting from top-left point
     
     Mat h =findHomography(pts_src,pts_dst);  // returns the homographic matrix
     warpPerspective(image_src,image_proj, h,image_src.size());
