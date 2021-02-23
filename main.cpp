@@ -64,7 +64,11 @@ void save_error(string name )
 }
 int main(int argc, char** argv)
 {
-    
+    if(!(string(argv[1]).compare(string("empty")) == 0 or string(argv[1]).compare(string("traffic")) == 0 ))
+    {
+        cout << "Run the executable using command "" make run args=filename"". Keep in mind absence of spaces on both the sides of the '=' sign.";
+        cin.get(); return -1 ;
+    }
     image_src = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
    // image_src_1 = imread(string(argv[1])+string(".jpg") , IMREAD_GRAYSCALE);
     image_src_1=image_src.clone();
