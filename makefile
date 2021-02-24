@@ -1,3 +1,6 @@
+
+
+
 all :
 	g++ main.cpp -o exec -pthread -std=c++11  `pkg-config --cflags --libs opencv4`
 clean: 
@@ -8,4 +11,7 @@ clean:
 	rm -f "Transformed empty.jpg"
 run :
 	./exec $(args) 
+
+.DEFAULT:
+	@ echo "Type ""make all"" to create the executable and type ""make run args=<filename>"" to run"
 
