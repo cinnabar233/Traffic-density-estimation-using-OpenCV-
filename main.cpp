@@ -97,13 +97,13 @@ int main(int argc, char** argv)
     sort_inputpts(pts_src);     // sort the inputs in anti-clockwise order starting from top-left point
     
     Mat h =findHomography(pts_src,pts_dst);  // returns the homographic matrix
-    warpPerspective(image_src,image_proj, h,image_src.size());
+    warpPerspective(image_src,image_proj, h,Size(1920,1080));   // transformed image (1920x1080)
     
     if( !display_and_save(window_proj,image_proj) ) {
         save_error(window_proj) ; return -1;
     }
     
-    Rect roi(831,211,544,867);
+    Rect roi(831,211,544,867);              // cropped image (544x867)
     image_crop = image_proj(roi);
     
     if( !display_and_save(window_crop,image_crop) ) {
