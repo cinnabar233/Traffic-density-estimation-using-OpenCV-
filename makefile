@@ -1,4 +1,6 @@
 
+.DEFAULT:
+	@ echo "Type ""make all"" to create the executable and type ""make run args=<filename>"" to run"
 
 
 all :
@@ -11,7 +13,5 @@ clean:
 	rm -f "Transformed empty.jpg"
 run :
 	./exec $(args) 
-
-.DEFAULT:
-	@ echo "Type ""make all"" to create the executable and type ""make run args=<filename>"" to run"
-
+main2 : 
+	g++ main2.cpp -o example -pthread -std=c++11  `pkg-config --cflags --libs opencv4`
