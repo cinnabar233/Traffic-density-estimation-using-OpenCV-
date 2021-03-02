@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <algorithm>
+#include<vector>
 
 using namespace cv;
 using namespace std;
@@ -139,27 +140,27 @@ int main(int argc, char** argv)
     pts_dst.push_back(Point2f(1375,1078));
     pts_dst.push_back(Point2f(831,1078));
     
-   //  sort_inputpts(pts_src);     // sort the inputs in anti-clockwise order starting from top-left point
+     sort_inputpts(pts_src);     // sort the inputs in anti-clockwise order starting from top-left point
     
     Mat h =findHomography(pts_src,pts_dst);  // returns the homographic matrix
-   //  warpPerspective(image_src,image_proj, h,Size(1920,1080));   // transformed image (1920x1080)
+    warpPerspective(image_src,image_proj, h,Size(1920,1080));   // transformed image (1920x1080)
     
-   //  if( !display_and_save(window_proj,image_proj) ) {
-   //      save_error(window_proj) ; return -1;
-   //  }
+    if( !display_and_save(window_proj,image_proj) ) {
+        save_error(window_proj) ; return -1;
+    }
     
-   //  Rect roi(831,211,544,867);              // cropped image (544x867)
-   //  image_crop = image_proj(roi);
+    Rect roi(831,211,544,867);              // cropped image (544x867)
+    image_crop = image_proj(roi);
     
-   //  if( !display_and_save(window_crop,image_crop) ) {
-   //      save_error(window_crop) ; return -1;
-   //  }
+    if( !display_and_save(window_crop,image_crop) ) {
+        save_error(window_crop) ; return -1;
+    }
 
     
     Mat bg,bg1,bg_final;
-    bg = imread(string(argv[1])+string(".jpg"));
-    cvtColor(bg, bg1, COLOR_BGR2GRAY);
-    GaussianBlur( bg1 , bg_final ,Size(5,5),0);
+    bg = image_crop;
+   // cvtColor(bg, bg1, COLOR_BGR2GRAY);
+    GaussianBlur( bg , bg_final ,Size(5,5),0);
     VideoCapture cap("traffic.mp4");
     
     queue_density(cap,bg_final,h);
