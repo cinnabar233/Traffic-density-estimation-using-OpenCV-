@@ -67,13 +67,13 @@ void save_error(string name )
 
 void queue_density(VideoCapture cap, Mat img,Mat h)
 {
-    Mat gray,frame,blurred,dst,thresh,dilated,contourOut;
+    Mat gray,frame,blurred,dst,thresh,dilated,contourOut,temp;
     vector<vector<Point> > contours;
     Mat frame_crop;
     while(true)
     {
         cap >> frame ;
-
+         Mat x=  Mat::zeros(img.rows, img.cols, CV_8UC3);
         warpPerspective(frame,frame_crop,h,Size(1920,1080)); 
 
         Rect roi(831,211,544,867);              // cropped image (544x867)
@@ -85,22 +85,42 @@ void queue_density(VideoCapture cap, Mat img,Mat h)
             }
         cvtColor(frame_crop, gray, COLOR_BGR2GRAY);
         
-        GaussianBlur(gray,blurred,Size(5,5),0);
+      //  GaussianBlur(gray,blurred,Size(5,5),0);
         
-        absdiff(blurred, img, dst);
+        absdiff(gray, img, temp);
         
-        threshold(dst,  thresh ,30, 255, THRESH_BINARY);
+        //sharpens the image
+        GaussianBlur(temp, dst, cv::Size(0, 0), 3);
+        addWeighted(temp, 1.5, dst, -0.5, 0, dst);
+
+        threshold(temp,  thresh ,30, 255, THRESH_BINARY);
         
-        dilate(thresh,dilated, Mat(), Point(-1, -1), 3, 1, 1);
+      //  dilate(thresh,dilated, Mat(), Point(-1, -1), 3, 1, 1);
         
-        contourOut = dilated.clone();
+        contourOut = thresh.clone();
         
-        findContours( contourOut, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+        findContours( thresh, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
         
+        for(int idx = 0 ; idx < contours.size(); idx++)
+            {
+             if(contourArea(contours[idx])>1000)
+                {
+                    Scalar color( 0, 255, 0);
+                  // Scalar color( rand()&255, rand()&255, rand()&255);
+                   drawContours( x, contours, idx, color, FILLED, 8 );
+                   // drawContours( x, contours, idx, color,2 );
+                }
+               // v.push_back(contourArea(contours[idx]));
+
+         }
+
+        imshow("output", x);        // displays contours in the frame
+
+        imshow("original",frame);  //original frame is also played
         double area = 0 ;
         
         for(auto contour : contours) area += contourArea(contour);
-        imshow("output", contourOut);
+      //  imshow("output", contourOut);
         int key = waitKey(30);
 
         if(key == 'q')  break;
@@ -110,7 +130,7 @@ void queue_density(VideoCapture cap, Mat img,Mat h)
 
 int main(int argc, char** argv)
 {
-    if(!(string(argv[1]).compare(string("empty")) == 0 or string(argv[1]).compare(string("traffic")) == 0 ))
+    if(!(string(argv[1]).compare(string("empty2")) == 0 or string(argv[1]).compare(string("traffic")) == 0 ))
     {
         cout << "Run the executable using command "" make run args=filename"". Keep in mind absence of spaces on both the sides of the '=' sign.";
         cin.get(); return -1 ;
@@ -145,25 +165,15 @@ int main(int argc, char** argv)
     Mat h =findHomography(pts_src,pts_dst);  // returns the homographic matrix
     warpPerspective(image_src,image_proj, h,Size(1920,1080));   // transformed image (1920x1080)
     
-    if( !display_and_save(window_proj,image_proj) ) {
-        save_error(window_proj) ; return -1;
-    }
     
     Rect roi(831,211,544,867);              // cropped image (544x867)
     image_crop = image_proj(roi);
     
-    if( !display_and_save(window_crop,image_crop) ) {
-        save_error(window_crop) ; return -1;
-    }
-
-    
     Mat bg,bg1,bg_final;
     bg = image_crop;
-   // cvtColor(bg, bg1, COLOR_BGR2GRAY);
-    GaussianBlur( bg , bg_final ,Size(5,5),0);
     VideoCapture cap("traffic.mp4");
     
-    queue_density(cap,bg_final,h);
+    queue_density(cap,bg,h);
 
 
     return 0;
