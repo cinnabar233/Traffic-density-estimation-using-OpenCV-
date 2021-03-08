@@ -8,7 +8,7 @@
 
 using namespace cv;
 using namespace std;
-void queue_density(Mat frame , Mat img, Mat h , int cnt )
+double queue_density(Mat frame , Mat img, Mat h , int cnt )
 {
     Mat gray,blurred,dst,thresh,dilated,contourOut,temp;
     vector<vector<Point> > contours;
@@ -49,7 +49,7 @@ void queue_density(Mat frame , Mat img, Mat h , int cnt )
                                         // imshow("original",frame);  //original frame is also played
    double area = 0 ;
    for(auto contour : contours) area += contourArea(contour);
-   cout<<((double)cnt)/15<<","<<area/(544*867)<<"\n";
+    return area;
 }
 void f(VideoCapture cap, Mat img,Mat h)
 {
