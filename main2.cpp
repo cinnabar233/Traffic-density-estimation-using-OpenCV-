@@ -57,8 +57,8 @@ void f(VideoCapture cap, Mat img,Mat h)
     cap >> frame ;
     Mat prvs,nxt;
     Rect roi(831,211,544,867);
-    warpPerspective(frame,frame, h,Size(1920,1080));
-    frame = frame(roi);
+    warpPerspective(frame,frame_2, h,Size(1920,1080));
+    frame = frame_2(roi);
     cvtColor(frame, prvs, COLOR_BGR2GRAY);
     int cnt = 0 ;
     while(true)
@@ -74,10 +74,9 @@ void f(VideoCapture cap, Mat img,Mat h)
         frame_2 = frame_2(roi);
         // capture >> frame2;
         cnt+=3;
-        q(frame_2,img,h,cnt);
+        cout<<cnt<<","<<queue_density(frame_2,img,h,cnt)<</*dynamic density(frame,nxt, prvs)*/<<"\n";
         cvtColor(frame_2, nxt, COLOR_BGR2GRAY);
         //  imshow("output", contourOut);
-        // dynamic density(frame,prvs);
         int key = waitKey(30);
         if(key == 'q')  break;
         prvs = nxt;
@@ -86,8 +85,7 @@ void f(VideoCapture cap, Mat img,Mat h)
 
 void dynamic_density(Mat frame , Mat prvs )
 {
-    
-    // fill //
+    // fill // do not the name the variable as next , usse gand mach rahi
 }
 int main(int argc, char** argv)
 {
