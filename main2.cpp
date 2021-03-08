@@ -8,73 +8,87 @@
 
 using namespace cv;
 using namespace std;
-void queue_density(VideoCapture cap, Mat img,Mat h)
+void queue_density(Mat frame , Mat img, Mat h , int cnt )
 {
-    
-    Mat gray,frame,blurred,dst,thresh,dilated,contourOut,temp;
+    Mat gray,blurred,dst,thresh,dilated,contourOut,temp;
     vector<vector<Point> > contours;
     Mat frame_crop;
+    Mat x=  Mat::zeros(img.rows, img.cols, CV_8UC3);
+   
+   cvtColor(frame, gray, COLOR_BGR2GRAY);
+                                                    //  GaussianBlur(gray,blurred,Size(5,5),0
+   absdiff(gray,img, temp);
+   
+                                                          //sharpens the image
+   GaussianBlur(temp, dst, cv::Size(0, 0), 3);
+   
+   addWeighted(temp, 1.5, dst, -0.5, 0, dst);
+
+   threshold(temp,  thresh ,50, 255, THRESH_BINARY);
+   
+                                                       //  dilate(thresh,dilated, Mat(), Point(-1, -1), 3, 1, 1);
+   
+   contourOut = thresh.clone();
+   
+   findContours( thresh, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+   
+   for(int idx = 0 ; idx < contours.size(); idx++)
+       {
+        if(contourArea(contours[idx])>1000)
+           {
+               // Scalar color( 0, 255, 0);
+              Scalar color( rand()&255, rand()&255, rand()&255);
+              drawContours( x, contours, idx, color, FILLED, 8 );
+              // drawContours( x, contours, idx, color,2 );
+           }
+          // v.push_back(contourArea(contours[idx]));
+
+    }
+
+                                         imshow("output", x);        // displays contours in the frame
+                                        // imshow("original",frame);  //original frame is also played
+   double area = 0 ;
+   for(auto contour : contours) area += contourArea(contour);
+   cout<<((double)cnt)/15<<","<<area/(544*867)<<"\n";
+}
+void f(VideoCapture cap, Mat img,Mat h)
+{
+    Mat frame,frame_2;
+    cap >> frame ;
+    Mat prvs,nxt;
+    Rect roi(831,211,544,867);
+    warpPerspective(frame,frame, h,Size(1920,1080));
+    frame = frame(roi);
+    cvtColor(frame, prvs, COLOR_BGR2GRAY);
     int cnt = 0 ;
     while(true)
     {
         cap >> frame ;
-        
+        if(frame.empty()) break ;
+        cap >> frame ;
+        if(frame.empty()) break ;
+        cap >> frame ;
         if(frame.empty()) break ;
         
-         Mat x=  Mat::zeros(img.rows, img.cols, CV_8UC3);
-        
-         warpPerspective(frame,frame_crop,h,Size(1920,1080));
-
-         Rect roi(831,211,544,867);                            // cropped image (544x867)
-         
-        frame_crop = frame_crop(roi);
-
-        
-        cvtColor(frame_crop, gray, COLOR_BGR2GRAY);
-        
-                                                              //  GaussianBlur(gray,blurred,Size(5,5),0);
-        
-        absdiff(gray, img, temp);
-        
-                                                               //sharpens the image
-        GaussianBlur(temp, dst, cv::Size(0, 0), 3);
-        
-        addWeighted(temp, 1.5, dst, -0.5, 0, dst);
-
-        threshold(temp,  thresh ,50, 255, THRESH_BINARY);
-        
-                                                            //  dilate(thresh,dilated, Mat(), Point(-1, -1), 3, 1, 1);
-        
-        contourOut = thresh.clone();
-        
-        findContours( thresh, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-        
-        for(int idx = 0 ; idx < contours.size(); idx++)
-            {
-             if(contourArea(contours[idx])>1000)
-                {
-                    // Scalar color( 0, 255, 0);
-                   Scalar color( rand()&255, rand()&255, rand()&255);
-                   drawContours( x, contours, idx, color, FILLED, 8 );
-                   // drawContours( x, contours, idx, color,2 );
-                }
-               // v.push_back(contourArea(contours[idx]));
-
-         }
-
-                                             // imshow("output", x);        // displays contours in the frame
-                                             // imshow("original",frame);  //original frame is also played
-        double area = 0 ;
-        for(auto contour : contours) area += contourArea(contour);
-        cnt++;
-        cout<<cnt<<","<<area/(544*867)<<"\n";
-      //  imshow("output", contourOut);
+        warpPerspective(frame,frame_2, h,Size(1920,1080));
+        frame_2 = frame_2(roi);
+        // capture >> frame2;
+        cnt+=3;
+        q(frame_2,img,h,cnt);
+        cvtColor(frame_2, nxt, COLOR_BGR2GRAY);
+        //  imshow("output", contourOut);
+        // dynamic density(frame,prvs);
         int key = waitKey(30);
         if(key == 'q')  break;
+        prvs = nxt;
     }
 }
 
-
+void dynamic_density(Mat frame , Mat prvs )
+{
+    
+    // fill //
+}
 int main(int argc, char** argv)
 {
     string vid = argv[1];
@@ -88,8 +102,8 @@ int main(int argc, char** argv)
     Mat bg = image_proj(roi);
     VideoCapture cap(vid);
     freopen("out.csv","w",stdout);
-    cout<<"Frame,Fraction\n";
-    queue_density(cap,bg,h);
+    cout<<"Frame,Queue density,Dynamic density\n";
+    f(cap,bg,h);
 
 
     return 0;
