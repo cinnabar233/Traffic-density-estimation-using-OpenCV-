@@ -49,7 +49,7 @@ double queue_density(Mat frame , Mat img, Mat h )
                                         // imshow("original",frame);  //original frame is also played
    double area = 0 ;
    for(auto contour : contours) area += contourArea(contour);
-    return area;
+    return area/(544*867);
 }
 void f(VideoCapture cap, Mat img,Mat h)
 {
@@ -74,7 +74,7 @@ void f(VideoCapture cap, Mat img,Mat h)
         frame_2 = frame_2(roi);
         // capture >> frame2;
         cnt+=3;
-        cout<<cnt<<","<<queue_density(frame_2,img,h)<</*dynamic density(frame,nxt, prvs)*/<<"\n";
+        cout<<cnt<<","<<queue_density(frame_2,img,h)/*dynamic density(frame,nxt, prvs)*/<<"\n";
         cvtColor(frame_2, nxt, COLOR_BGR2GRAY);
         //  imshow("output", contourOut);
         int key = waitKey(30);
@@ -90,7 +90,7 @@ void dynamic_density(Mat frame , Mat prvs )
 int main(int argc, char** argv)
 {
     string vid = argv[1];
-    MAt image_proj;
+    Mat image_proj;
     Mat image_src = imread("empty2.jpg" , IMREAD_GRAYSCALE);
     vector<Point2f> pts_src,pts_dst;
     pts_src={Point2f(968,202),Point2f(1293,225),Point2f(1559,1056),Point2f(399,1050)};
