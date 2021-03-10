@@ -10,4 +10,7 @@
 - To delete the C++ executable and the modified photographs, type `make clean`.
 
 
-
+## Dynamic and queue density
+- Create the C++ executable by typing 'make main2'.
+- To run the C++ executable, type `make run args=<filename>` where filename is either `empty` or `traffic`.
+- To delete the C++ executable and the modified photographs, type `make clean`.
