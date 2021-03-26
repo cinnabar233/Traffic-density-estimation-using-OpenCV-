@@ -231,18 +231,21 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
     while(true)
     {
         Mat nxt;
-        cap >> frame ;
-        if(frame.empty()) break ;
-        cap >> frame ;
-        if(frame.empty()) break ;
-        cap >> frame ;
-        if(frame.empty()) break ;     //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
+        for(int i=0;i<10;i++) {
+            cap >> frame ;
+            if(frame.empty()) return vals ;
+            cap >> frame ;
+            if(frame.empty()) return vals ;
+            cap >> frame ;
+            if(frame.empty()) return vals ;     //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
+            
+            warpPerspective(frame,frame_2, h,Size(1920,1080));
+
+            frame_2 = frame_2(roi);
+
+            cvtColor(frame_2, nxt, COLOR_BGR2GRAY); //frame is projected and cropped and converted to gray scale
+        }
         
-        warpPerspective(frame,frame_2, h,Size(1920,1080));
-
-        frame_2 = frame_2(roi);
-
-        cvtColor(frame_2, nxt, COLOR_BGR2GRAY); //frame is projected and cropped and converted to gray scale
         cnt+=3;
         time=cnt/15;
         
