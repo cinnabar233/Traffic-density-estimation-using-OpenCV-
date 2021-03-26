@@ -8,11 +8,12 @@
 #include<pthread.h>
 #include<fstream>
 #include<chrono>
+#include<math.h>
 using namespace cv;
 using namespace std;
 using namespace std::chrono;
 
-const int thread_num=3;
+int thread_num;
 // returns the queue density in frame, by subracting the background image
 struct queue_params{
     Mat frame ; Mat img ;
@@ -295,7 +296,7 @@ int main(int argc, char** argv)
     auto start = high_resolution_clock::now();
     
     string vid = argv[1];
-    
+    thread_num = atoi(argv[2]);
     Mat image_proj;
     Mat image_src = imread("empty2.jpg" , IMREAD_GRAYSCALE);  // background image used in queue density, it has been extracted from the video itself
 
@@ -311,7 +312,7 @@ int main(int argc, char** argv)
  
     // VideoCapture cap(vid);
    
-    freopen("out_2.txt","w",stdout); // file in which data will be written
+    freopen("out_temporal.txt","w",stdout); // file in which data will be written
     cout<<"frame,queue density"<<"\n";
 
     generate(vid,bg,h);  // function to generate data
