@@ -228,20 +228,17 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
     while(true)
     {
         Mat nxt;
-        cap >> frame ;
-        if(frame.empty()) break ;
-        
-        cap >> frame ;
-        if(frame.empty()) break ;
-        cap >> frame ;
-        if(frame.empty()) break ;     //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
+          //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
         
         queue_params parts[thread_num];
         
         for(int i=0;i<thread_num;i++){
-            cap >> frame;
-            if(frame.empty())
-                return vals;
+            cap >> frame ;
+            if(frame.empty()) return vals ;
+            cap >> frame ;
+            if(frame.empty()) return vals ;
+            cap >> frame ;
+            if(frame.empty()) return vals ;
             
             warpPerspective(frame,frame_2, h,Size(1920,1080));
             frame_2 = frame_2(roi);
@@ -326,6 +323,7 @@ int main(int argc, char** argv)
     cout << duration.count();
     return 0;
 }
+
 
 
 
