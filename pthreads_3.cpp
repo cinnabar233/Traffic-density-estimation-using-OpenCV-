@@ -272,11 +272,11 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
         }
         
         
-        int r1 = pthread_create(&threads[2] , NULL , f , (void *)right_half);
+        int r1 = pthread_create(&threads[2] , NULL , f , (void *)mid_half);
 
         if(r1)
         {
-            cout << "could not make right thread" ; exit(-1);
+            cout << "could not make mid thread" ; exit(-1);
         }
     
         pthread_join(threads[0] , NULL);
@@ -341,7 +341,7 @@ int main(int argc, char** argv)
  
     // VideoCapture cap(vid);
    
-    freopen("out_2.txt","w",stdout); // file in which data will be written
+    freopen("out_3.txt","w",stdout); // file in which data will be written
     cout<<"frame,queue density"<<"\n";
 
     generate(vid,bg,h);  // function to generate data
