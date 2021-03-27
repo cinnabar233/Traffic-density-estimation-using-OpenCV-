@@ -28,13 +28,13 @@ struct queue_params{
                                                   
    absdiff(gray,img, temp);     // absolute difference is taken b/w current frame and background image
 
-   dilate(temp,temp, Mat(), Point(-1, -1), 2, 1, 1);
+   dilate(temp,temp, Mat(), Point(-1, -1), 1, 1, 1);
                                                         
    GaussianBlur(temp, temp, cv::Size(0, 0), 2);   // image is dilated and blurred for better enclosure of vehicles
    
    //addWeighted(temp, 1.5, dst, -0.5, 0, dst);
 
-   threshold(temp,  thresh ,40, 255, THRESH_BINARY);  // gray image is converted to black and white image for finding contours
+   threshold(temp,  thresh ,30, 255, THRESH_BINARY);  // gray image is converted to black and white image for finding contours
    
    findContours( thresh, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
@@ -42,7 +42,7 @@ struct queue_params{
    double area = 0 ;
    for(int idx = 0 ; idx < contours.size(); idx++)
        {
-        if(contourArea(contours[idx])>5000)  // area less than 5000 is mostly noise in image
+        if(contourArea(contours[idx])>1000)  // area less than 5000 is mostly noise in image
            {
                 Scalar color( 0, 255, 0);
                 drawContours( x, contours, idx, color, FILLED, 8 ); // filled countours are drawn in frame x, for visualisation of recognised contours
@@ -269,21 +269,21 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
             cout << "could not make leftup thread" ; exit(-1);
         }
 
-        int l2 = pthread_create(&threads[0] , NULL , f , (void *)leftdown_half);
+        int l2 = pthread_create(&threads[1] , NULL , f , (void *)leftdown_half);
         
         if(l2)
         {
             cout << "could not make leftdown thread" ; exit(-1);
         }
 
-        int r1 = pthread_create(&threads[1] , NULL , f , (void *)rightup_half);
+        int r1 = pthread_create(&threads[2] , NULL , f , (void *)rightup_half);
 
         if(r1)
         {
             cout << "could not make rightup thread" ; exit(-1);
         }
     
-        int r2 = pthread_create(&threads[1] , NULL , f , (void *)rightdown_half);
+        int r2 = pthread_create(&threads[3] , NULL , f , (void *)rightdown_half);
 
         if(r2)
         {
@@ -291,9 +291,9 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
         }
      //   cout<<left_status<<endl;
         pthread_join(threads[0] , NULL);
-
-        
         pthread_join(threads[1] , NULL);
+        pthread_join(threads[2] , NULL);
+        pthread_join(threads[3] , NULL);
         
         double leftup_status= leftup_half->area;
         double rightup_status= rightup_half->area;
@@ -310,8 +310,8 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
         
         prvs = nxt; // frame_2 is coverted to black-white and stored in prvs for optical flow calculation for next iteration
       
-        int key = waitKey(30);
-        if(key == 'q')  break;
+      //  int key = waitKey(30);
+      //  if(key == 'q')  break;
 
     }
     return vals ;

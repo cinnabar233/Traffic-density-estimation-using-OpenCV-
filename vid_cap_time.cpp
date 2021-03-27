@@ -231,7 +231,7 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
     while(true)
     {
         Mat nxt;
-        for(int i=0;i<10;i++) {
+        for(int i=0;i<1;i++) {
             cap >> frame ;
             if(frame.empty()) return vals ;
             cap >> frame ;
@@ -301,8 +301,8 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
 //
 //        prvs = nxt; // frame_2 is coverted to black-white and stored in prvs for optical flow calculation for next iteration
       
-        int key = waitKey(30);
-        if(key == 'q')  break;
+//        int key = waitKey(30);
+//        if(key == 'q')  break;
 
     }
     return vals ;
