@@ -46,7 +46,7 @@ void sparse_flow(VideoCapture capture,Mat h)
         if (frame.empty())
             break;
         cvtColor(frame, frame_gray, COLOR_BGR2GRAY);
-        goodFeaturesToTrack(frame_gray, p0, 100, 0.3, 7, Mat(), 7, false, 0.04);
+        goodFeaturesToTrack(old_gray, p0, 100, 0.3, 7, Mat(), 7, false, 0.04);
         // calculate optical flow
         vector<uchar> status;
         vector<float> err;
@@ -57,12 +57,17 @@ void sparse_flow(VideoCapture capture,Mat h)
         {
             // Select good points
             if(status[i] == 1) {
-                good_new.push_back(p1[i]);
-                // draw the tracks
-                line(mask,p1[i], p0[i], color, 2);
-                circle(frame, p1[i], 5, color, -1);
+                double dist=((p1[i].x-p0[i].x)*(p1[i].x-p0[i].x)) + ((p1[i].y-p0[i].y)*(p1[i].y-p0[i].y));
+                cout<<dist<<" ";
+                if(dist>25){
+                    good_new.push_back(p1[i]);
+                    // draw the tracks
+                    line(mask,p1[i], p0[i], color, 2);
+                    circle(frame, p1[i], 5, color, -1);
+                }
             }
         }
+        cout<<endl;
         Mat img;
         add(frame, mask, img);
         imshow("Frame", img);
@@ -72,7 +77,7 @@ void sparse_flow(VideoCapture capture,Mat h)
             break;
         // Now update the previous frame and previous points
         old_gray = frame_gray.clone();
-        p0 = good_new;
+       // p0 = good_new;
     }
 }
 int main(int argc, char** argv)
