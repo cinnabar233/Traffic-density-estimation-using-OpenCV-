@@ -31,50 +31,63 @@ void sparse_flow(VideoCapture capture,Mat h)
     cvtColor(old_frame, old_gray, COLOR_BGR2GRAY);
     goodFeaturesToTrack(old_gray, p0, 100, 0.3, 7, Mat(), 7, false, 0.04);
     // Create a mask image for drawing purposes
-    Mat mask = Mat::zeros(old_frame.size(), old_frame.type());
+  //  Mat mask= Mat::zeros(old_frame.size(), old_frame.type());
     
     Mat ori;
-    Scalar color( 0,0,0);
-    
+    Scalar color( 255,255,255);
+    double i=1;
     while(true){
         Mat frame,frame_2, frame_gray;
         capture >> frame;
+        if (frame.empty())
+            break;
+        capture >> frame;
+        if (frame.empty())
+            break;
+        capture >> frame;
+        if (frame.empty())
+            break;
         warpPerspective(frame,frame_2, h,Size(1920,1080));
         frame = frame_2(roi);
         ori=frame.clone();
-        
-        if (frame.empty())
-            break;
+
         cvtColor(frame, frame_gray, COLOR_BGR2GRAY);
-        goodFeaturesToTrack(old_gray, p0, 100, 0.3, 7, Mat(), 7, false, 0.04);
+        goodFeaturesToTrack(old_gray, p0, 100, 0.1,5, Mat(), 4, false, 0.04);
         // calculate optical flow
         vector<uchar> status;
         vector<float> err;
         TermCriteria criteria = TermCriteria((TermCriteria::COUNT) + (TermCriteria::EPS), 10, 0.03);
         calcOpticalFlowPyrLK(old_gray, frame_gray, p0, p1, status, err, Size(15,15), 2, criteria);
         vector<Point2f> good_new;
+        double cnt=0;
         for(uint i = 0; i < p0.size(); i++)
         {
             // Select good points
             if(status[i] == 1) {
                 double dist=((p1[i].x-p0[i].x)*(p1[i].x-p0[i].x)) + ((p1[i].y-p0[i].y)*(p1[i].y-p0[i].y));
-                cout<<dist<<" ";
-                if(dist>25){
+               // cout<<dist<<" ";
+                if(dist>15){
+                    cnt++;
                     good_new.push_back(p1[i]);
                     // draw the tracks
-                    line(mask,p1[i], p0[i], color, 2);
-                    circle(frame, p1[i], 5, color, -1);
+                 //   line(mask,p1[i], p0[i], color, 2);
+                    circle(frame, p1[i], 10, color, -1);
                 }
             }
         }
-        cout<<endl;
-        Mat img;
-        add(frame, mask, img);
-        imshow("Frame", img);
+    
+        double area = 0 ;
+        double time=i/15;
+        cout<<time<<","<<(cnt*0.007)<<endl;
+        i=i+3;
+     //  Mat img;
+      //  add(frame, mask, img);
         
-        int keyboard = waitKey(30);
-        if (keyboard == 'q' || keyboard == 27)
-            break;
+     //   imshow("Frame", frame);
+        
+//        int keyboard = waitKey(30);
+//        if (keyboard == 'q' || keyboard == 27)
+//            break;
         // Now update the previous frame and previous points
         old_gray = frame_gray.clone();
        // p0 = good_new;
