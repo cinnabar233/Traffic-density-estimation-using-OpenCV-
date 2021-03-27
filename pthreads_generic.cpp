@@ -23,8 +23,9 @@ struct queue_params{
 
     Mat gray,blurred,dst,thresh,dilated,contourOut,temp;
     vector<vector<Point> > contours;
-
+   // cout<<"her2\n";
    cvtColor(frame, gray, COLOR_BGR2GRAY);   // frame is converted to gray scale
+    //cout<<"hre3\n";
                                                   
    absdiff(gray,img, temp);     // absolute difference is taken b/w current frame and background image
 
@@ -250,14 +251,17 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h , int NUM_THREA
         time=cnt/15;
         for(int i = 0 ; i < NUM_THREADS ; i++)
         {
+            cout<<i<<"\n";
             xframe = frame_2(Rect(i*(544)/NUM_THREADS , 0 , 544/NUM_THREADS , 867));
             xbg = img(Rect(i*(544)/NUM_THREADS , 0 , 544/NUM_THREADS , 867));
             y = {xframe , xbg};
             x[i] = &y;
             int l = pthread_create(&threads[i] , NULL , f , (void *)x[i]);
+            
             if(l)
             {
                 cout << "could not make "<<i<<"-th thread" ; exit(-1);
+                
             }
         }
         for(int i = 0 ; i < NUM_THREADS ; i++) pthread_join(threads[i],NULL);
