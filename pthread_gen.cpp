@@ -8,13 +8,13 @@
 #include<pthread.h>
 #include<fstream>
 #include<chrono>
-#include<math.h>
 using namespace cv;
 using namespace std;
 using namespace std::chrono;
-
-int thread_num;
 // returns the queue density in frame, by subracting the background image
+
+int thread_num=3;
+
 struct queue_params{
     Mat frame ; Mat img ;
     double area;
@@ -212,13 +212,17 @@ void *f(void *x)
 
 vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
 {
-    Mat frame,frame_2,prvs ;
-    pthread_t threads[thread_num];
-    
+    Mat frame,frame_2,prvs ,left_frame, right_frame , left_bg , right_bg, mid_frame , mid_bg;
+
+    pthread_t threads[3];
     vector<double> vals;
     cap >> frame ;
+    Rect roi_parts[thread_num];
     Rect roi(831,211,544,867);
-
+    
+    for(int i=0;i<thread_num;i++){
+        roi_parts[i]=Rect(i*(544/thread_num),0,(544/thread_num),867);
+    }
     
     warpPerspective(frame,frame_2, h,Size(1920,1080));
     frame = frame_2(roi);
@@ -227,9 +231,6 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
     double time;  // denotes time stamp of frame
     while(true)
     {
-        
-          //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
-        
         queue_params parts[thread_num];
         
         for(int i=0;i<thread_num;i++){
@@ -238,12 +239,12 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
             cap >> frame ;
             if(frame.empty()) return vals ;
             cap >> frame ;
-            if(frame.empty()) return vals ;
+            if(frame.empty()) return vals ;     //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
             
             warpPerspective(frame,frame_2, h,Size(1920,1080));
             frame_2 = frame_2(roi);
             
-            parts[i] = {frame_2.clone(),img.clone()};
+            parts[i]={frame_2.clone()(roi_parts[i]),img.clone()(roi_parts[i])};
             
             int l = pthread_create(&threads[i] , NULL , f , (void *)(&parts[i]));
             
@@ -251,16 +252,19 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
                 cout << "could not make thread" ;
                 exit(-1);
             }
+            
         }
+        cnt+=3*thread_num;
+        time=cnt/15;
+        
+        double area=0.0;
         
         for(int i=0;i<thread_num;i++){
             pthread_join(threads[i] , NULL);
-            vals.push_back(parts[i].area);
+            area=area+parts[i].area;
         }
-        
-        cnt+=3*thread_num;
-        time=cnt/15;
-
+        vals. push_back(area);
+        // cout<<time<<","<<queue_density(frame_2,img)<<","<<dynamic_density(nxt, prvs)<<"\n";
 
     }
     return vals ;
@@ -302,7 +306,7 @@ int main(int argc, char** argv)
  
     // VideoCapture cap(vid);
    
-    freopen("out_temporal.txt","w",stdout); // file in which data will be written
+    freopen("out_3.txt","w",stdout); // file in which data will be written
     cout<<"frame,queue density"<<"\n";
 
     generate(vid,bg,h);  // function to generate data
@@ -316,8 +320,6 @@ int main(int argc, char** argv)
     cout << duration.count();
     return 0;
 }
-
-
 
 
 
