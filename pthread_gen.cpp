@@ -214,7 +214,7 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
 {
     Mat frame,frame_2,prvs ,left_frame, right_frame , left_bg , right_bg, mid_frame , mid_bg;
 
-    pthread_t threads[3];
+    pthread_t threads[thread_num];
     vector<double> vals;
     cap >> frame ;
     Rect roi_parts[thread_num];
