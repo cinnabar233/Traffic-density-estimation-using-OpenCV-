@@ -52,7 +52,7 @@ void sparse_flow(VideoCapture capture,Mat h)
         ori=frame.clone();
 
         cvtColor(frame, frame_gray, COLOR_BGR2GRAY);
-        goodFeaturesToTrack(old_gray, p0, 100, 0.1,5, Mat(), 4, false, 0.04);
+        goodFeaturesToTrack(old_gray, p0, 100, 0.3,7, Mat(), 7, false, 0.04);
         // calculate optical flow
         vector<uchar> status;
         vector<float> err;
@@ -66,7 +66,7 @@ void sparse_flow(VideoCapture capture,Mat h)
             if(status[i] == 1) {
                 double dist=((p1[i].x-p0[i].x)*(p1[i].x-p0[i].x)) + ((p1[i].y-p0[i].y)*(p1[i].y-p0[i].y));
                // cout<<dist<<" ";
-                if(dist>15){
+                if(dist>25){
                     cnt++;
                     good_new.push_back(p1[i]);
                     // draw the tracks
@@ -78,19 +78,11 @@ void sparse_flow(VideoCapture capture,Mat h)
     
         double area = 0 ;
         double time=i/15;
-        cout<<time<<","<<(cnt*0.007)<<endl;
+        cout<<time<<","<<(cnt*0.0065)<<endl;
         i=i+3;
-     //  Mat img;
-      //  add(frame, mask, img);
-        
-     //   imshow("Frame", frame);
-        
-//        int keyboard = waitKey(30);
-//        if (keyboard == 'q' || keyboard == 27)
-//            break;
+
         // Now update the previous frame and previous points
         old_gray = frame_gray.clone();
-       // p0 = good_new;
     }
 }
 int main(int argc, char** argv)
@@ -111,7 +103,7 @@ int main(int argc, char** argv)
     
  
     freopen("out_sparse.txt","w",stdout); // file in which data will be written
-    cout<<"frame,dynamic density"<<"\n";
+    cout<<"frame,queue density"<<"\n";
 
     VideoCapture cap(vid);
     sparse_flow(cap,h);  // function to generate data
@@ -122,7 +114,6 @@ int main(int argc, char** argv)
     
     auto duration = duration_cast<microseconds>(stop - start);
     
-    //cout << duration.count();
+   // cout << duration.count();
     return 0;
 }
-
