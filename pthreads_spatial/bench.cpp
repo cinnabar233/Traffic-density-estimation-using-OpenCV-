@@ -170,7 +170,7 @@ int main(int argc, char** argv)
     
     auto duration = duration_cast<microseconds>(stop - start);
     
-    cout << duration.count();
+   // cout << duration.count();
 
     return 0;
 }
