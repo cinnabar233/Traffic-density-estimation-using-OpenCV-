@@ -212,7 +212,7 @@ void *f(void *x)
 
 vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
 {
-    Mat frame,frame_2,prvs ,left_frame, right_frame , left_bg , right_bg, mid_frame , mid_bg;
+    Mat frame,frame_2,prvs ,cropped;
 
     pthread_t threads[thread_num];
     vector<double> vals;
@@ -223,7 +223,7 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
     for(int i=0;i<thread_num;i++){
         roi_parts[i]=Rect(i*(544/thread_num),0,(544/thread_num),867);
     }
-    
+     queue_params parts[thread_num];
     warpPerspective(frame,frame_2, h,Size(1920,1080));
     frame = frame_2(roi);
     cvtColor(frame, prvs, COLOR_BGR2GRAY);     // first frame is projected and cropped and stored in prvs matrix
@@ -231,20 +231,22 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
     double time;  // denotes time stamp of frame
     while(true)
     {
-        queue_params parts[thread_num];
+       
+        cap >> frame ;
+        if(frame.empty()) return vals ;
+        cap >> frame ;
+        if(frame.empty()) return vals ;
+        cap >> frame ;
+        if(frame.empty()) return vals ;
+        
+        warpPerspective(frame,frame_2, h,Size(1920,1080));
         
         for(int i=0;i<thread_num;i++){
-            cap >> frame ;
-            if(frame.empty()) return vals ;
-            cap >> frame ;
-            if(frame.empty()) return vals ;
-            cap >> frame ;
-            if(frame.empty()) return vals ;     //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
+     //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
+ 
+            cropped = frame_2(roi);
             
-            warpPerspective(frame,frame_2, h,Size(1920,1080));
-            frame_2 = frame_2(roi);
-            
-            parts[i]={frame_2.clone()(roi_parts[i]),img.clone()(roi_parts[i])};
+            parts[i]={cropped.clone()(roi_parts[i]),img.clone()(roi_parts[i])};
             
             int l = pthread_create(&threads[i] , NULL , f , (void *)(&parts[i]));
             

@@ -264,7 +264,7 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
             cout << "could not make left thread" ; exit(-1);
         }
 
-        int m1 = pthread_create(&threads[1] , NULL , f , (void *)right_half);
+        int m1 = pthread_create(&threads[1] , NULL , f , (void *)mid_half);
 
         if(m1)
         {
@@ -272,7 +272,7 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
         }
         
         
-        int r1 = pthread_create(&threads[2] , NULL , f , (void *)mid_half);
+        int r1 = pthread_create(&threads[2] , NULL , f , (void *)right_half);
 
         if(r1)
         {
@@ -298,8 +298,8 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
         
         prvs = nxt; // frame_2 is coverted to black-white and stored in prvs for optical flow calculation for next iteration
       
-        int key = waitKey(30);
-        if(key == 'q')  break;
+//        int key = waitKey(30);
+//        if(key == 'q')  break;
 
     }
     return vals ;
