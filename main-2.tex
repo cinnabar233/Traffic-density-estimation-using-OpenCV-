@@ -117,12 +117,29 @@ The following plot describes the obtained results.
     \item  This is reasonable since sparse optical flow estimates the motion of object by tracking a determined set of points whereas dense optical flow tracks all the pixels. Hence, for the calculation of area, the dense version is more suitable as we intend to distinguish between large and small vehicles.
     \item Since sparse flow deals with a smaller set of points, it take lesser time than dense flow.
 \end{itemize}
+\section*{Temporal and Spatial Multi-threading on Dense optical flow}
+\subsection*{Methodology}
+\begin{itemize}
+    \item In the spatial case, we split up the dynamic density estimation procedure to different threads concurrently by dividing the frames into vertical stripes and passing them on to threads.
+    \item In the temporal case, we gave every \textit{i}-th frame to the \textit{i}-th thread. 
+    
+\end{itemize}
+\subsection*{Results}
+The following plot describes the obtained results.
+%plot of runtime vs utility here 
+\subsection*{Observation \& Explanation}
+\begin{itemize}
+    \item A noticeable runtime v/s utility trade-off is observed in this case. The runtime decreases and the error increases as the number of threads increase.
+    \item  This is reasonable since dynamic density estimation is expensive with respect to runtime and dividing its work into threads is likely to reduce runtime substantially.
+    \item By Dividing the original frame into several frames, we create several "edges/boundaries" in the image. In the image processing involved in dense optical flow, the edge pixels are not processed as properly as others. Hence the error increases as the number of threads in spatially concurrent dense optical flow increase.
+    \item Also, the error in temporal concurrency is negligible in comparison to that in the spatial case which is reasonable since there are no boundary issues in temporal threads, the whole original frame is given to one or the other thread. This shows that temporal concurrency is a better option than the spatial counterpart, given the same number of threads.
+\end{itemize}
 \section*{Conclusion}
 % \subsection*{Methodology}
 % \subsection*{Observation \& Explanation}
 \begin{itemize}
-    \item Method-1,2 and Sparse v/s Dense optical flow show an obtrusive runtime-utility trade-off.
-    \item  However, concurrency seems to gives no advantage, which is explainable. Concurrency would have led to substantial runtime gains, had the bottleneck procedure for runtime was also parallelized which is not the case with us. Implementing dense optical flow concurrently would have shown the real gains of concurrency. 
+    \item Method-1,2 , Sparse v/s Dense optical and concurrency in dense optical flow show an obtrusive runtime-utility trade-off.
+    \item  However, concurrency seems to gives no advantage in the background subtraction procedure, which is explainable. Concurrency would have led to substantial runtime gains, had the bottleneck procedure for runtime was also parallelized which is not the case with us. Implementing dense optical flow concurrently would have shown the real gains of concurrency. 
     % \item Since sparse flow deals with a smaller set of points, it take lesser time than dense flow.
 \end{itemize}
 \end{document}
