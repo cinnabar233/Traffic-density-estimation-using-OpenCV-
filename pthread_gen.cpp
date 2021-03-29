@@ -246,7 +246,7 @@ vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
  
             cropped = frame_2(roi);
             
-            parts[i]={cropped.clone()(roi_parts[i]),img.clone()(roi_parts[i])};
+            parts[i]={cropped(roi_parts[i]),img(roi_parts[i])};
             
             int l = pthread_create(&threads[i] , NULL , f , (void *)(&parts[i]));
             
