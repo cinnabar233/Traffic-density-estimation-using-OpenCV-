@@ -62,7 +62,7 @@ double dynamic_density( Mat nxt ,Mat prvs )
         // area encloded by countors is calculated
         for(int idx = 0 ; idx < contours.size(); idx++)
             {
-             if(contourArea(contours[idx])>50)  // area less than 7000 is mostly noise in image
+             if(contourArea(contours[idx])>2000)  // area less than 7000 is mostly noise in image
                 {
                     Scalar color( 0, 255, 0);
                     drawContours( x, contours, idx, color, FILLED, 8 );  // filled countours are drawn in frame x, for visualisation of recognised contours
