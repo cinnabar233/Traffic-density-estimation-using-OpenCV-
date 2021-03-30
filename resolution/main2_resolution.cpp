@@ -42,9 +42,9 @@ double queue_density(Mat frame , Mat img )
 
     }
 
-          //imshow("final", x);     // displays contours in the frame
-         // imshow("queue_density", thresh);
-         //  imshow("original", frame);              //original frame
+      imshow("final", x);     // displays contours in the frame
+         imshow("queue_density", thresh);
+        imshow("original", frame);              //original frame
 
     return area/(544*867);  //queue density is returned
 }
@@ -103,19 +103,23 @@ double dynamic_density( Mat nxt ,Mat prvs )
 }
 
 // function to generate data
-void generate(VideoCapture cap, Mat img,Mat h, int r , int c )
+void generate(VideoCapture cap, Mat img,Mat h, int r , int c)
 {
-    Mat frame,frame_2,prvs;
+    Mat frame,frame_2,prvs,dst;
     
-    img.resize((r ,c));
+    // img.resize((r ,c));
     
+    resize(img, dst, Size(r,c));
+    img = dst;
+    // imshow("background" , img);
     cap >> frame ;
     Rect roi(831,211,544,867);
     warpPerspective(frame,frame_2, h,Size(1920,1080));
     frame = frame_2(roi);
     
-    frame.resize((r , c));
-    
+     // frame.resize((r , c));
+    resize(frame, dst, Size(r,c));
+    frame  = dst ;
     cvtColor(frame, prvs, COLOR_BGR2GRAY);     // first frame is projected and cropped and stored in prvs matrix
     
     // resize(frame,frame,Size(r,c));
@@ -136,10 +140,11 @@ void generate(VideoCapture cap, Mat img,Mat h, int r , int c )
         
         warpPerspective(frame,frame_2, h,Size(1920,1080));
         
-        frame_2 = frame_2(roi);
+         frame_2 = frame_2(roi);
         
-        frame_2.resize((r , c));
-        
+         //frame_2.resize((r , c));
+        resize(frame_2, dst, Size(r,c));
+        frame_2 = dst;
         cvtColor(frame_2, nxt, COLOR_BGR2GRAY); //frame is projected and cropped and converted to gray scale
 
         cnt++;
@@ -150,8 +155,8 @@ void generate(VideoCapture cap, Mat img,Mat h, int r , int c )
         
         prvs = nxt; // frame_2 is coverted to black-white and stored in prvs for optical flow calculation for next iteration
       
-       // int key = waitKey(30);
-       // if(key == 'q')  break;
+        int key = waitKey(30);
+       if(key == 'q')  break;
 
     }
 }
@@ -160,7 +165,7 @@ void generate(VideoCapture cap, Mat img,Mat h, int r , int c )
 int main(int argc, char** argv)
 {
     string vid = argv[1];
-    int r = atoi(argv[2]) , c  = atoi(argv[3]);
+    int ratio = atoi(argv[2]),r,c;
     Mat image_proj;
     Mat image_src = imread("empty2.jpg" , IMREAD_GRAYSCALE);  // background image used in queue density, it has been extracted from the video itself
 
@@ -172,7 +177,8 @@ int main(int argc, char** argv)
     Rect roi(831,211,544,867);
     Mat bg = image_proj(roi); // cropped image (544x867)
     
-    r = bg.rows/r ; c = bg.cols/c;
+    r = floor(1920.0/sqrt((double)ratio)) ; c = floor(1080.0/sqrt((double)ratio)) ;
+    cout << r << " "<<c <<"\n";
     VideoCapture cap(vid);
 
     freopen("out_resolution.txt","w",stdout); // file in which data will be written
@@ -184,6 +190,7 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
 
 
 
