@@ -8,7 +8,7 @@
 
 using namespace cv;
 using namespace std;
-
+int r ;
 // returns the queue density in frame, by subracting the background image
 double queue_density(Mat frame , Mat img )
 {
@@ -33,98 +33,37 @@ double queue_density(Mat frame , Mat img )
    double area = 0 ;
    for(int idx = 0 ; idx < contours.size(); idx++)
        {
-        if(contourArea(contours[idx])>5000)  // area less than 5000 is mostly noise in image
+        if(contourArea(contours[idx])*r*r>5000)  // area less than 5000 is mostly noise in image
            {
-                Scalar color( 0, 255, 0);
-                drawContours( x, contours, idx, color, FILLED, 8 ); // filled countours are drawn in frame x, for visualisation of recognised contours
+                //Scalar color( 0, 255, 0);
+               // drawContours( x, contours, idx, color, FILLED, 8 ); // filled countours are drawn in frame x, for visualisation of recognised contours
                 area += contourArea(contours[idx]);
            }
 
     }
 
-          //imshow("final", x);     // displays contours in the frame
-         // imshow("queue_density", thresh);
-         //  imshow("original", frame);              //original frame
 
-    return area/(544*867);  //queue density is returned
-}
-
-// returns the dyanamic density in "nxt" frame, using optical flow method
-double dynamic_density( Mat nxt ,Mat prvs )
-{
-          
-        // flow mat is generated , it indicates optical flow from "prvs" to "nxt"
-        Mat flow(prvs.size(), CV_32FC2);
-        calcOpticalFlowFarneback(prvs, nxt, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
-
-        // flow calculated is visualised in hsv format by assigning them color based on the magnitude and angle of flow vectors
-        Mat flow_parts[2];
-        split(flow, flow_parts);
-        Mat magnitude, angle, magn_norm;
-        cartToPolar(flow_parts[0], flow_parts[1], magnitude, angle, true);
-        normalize(magnitude, magn_norm, 0.0f, 1.0f, NORM_MINMAX);
-        angle *= ((1.f / 360.f) * (180.f / 255.f));
-        
-        //build the  hsv image
-        Mat _hsv[3], hsv, hsv8, bgr,bw,thresh;
-         vector<vector < Point>> contours;
-
-
-        _hsv[0] = angle;
-        _hsv[1] = Mat::ones(angle.size(), CV_32F);
-        _hsv[2] = magn_norm;
-        merge(_hsv, 3, hsv);
-        hsv.convertTo(hsv8, CV_8U, 255.0);
-        cvtColor(hsv8, bgr, COLOR_HSV2BGR); // hsv image is converted to bgr
-        cvtColor(bgr, bw, COLOR_BGR2GRAY);  // bgr image is converted to gray
-
-        threshold(bw,  thresh ,4, 255, THRESH_BINARY); // gray image is converted to black and white image, where all pixels having value more the 4 are white and other are black
-        
-        erode(thresh,thresh, Mat(), Point(-1, -1), 1, 1, 1);  // thresh image is eroded for better results
-
-        findContours(thresh, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE); // contours are calculated in the eroded image
-        double area = 0 ;
-     
-        Mat x=  Mat::zeros(thresh.rows, thresh.cols, CV_8UC3);
-        // area encloded by countors is calculated
-        for(int idx = 0 ; idx < contours.size(); idx++)
-            {
-             if(contourArea(contours[idx])>7000)  // area less than 7000 is mostly noise in image
-                {
-                    Scalar color( 0, 255, 0);
-                    drawContours( x, contours, idx, color, FILLED, 8 );  // filled countours are drawn in frame x, for visualisation of recognised contours
-                    area += contourArea(contours[idx]);
-                }
-        }
-
-//imshow("dynamic_density", x);
-      return area/(544*867);  //dyanamic density is returned
-
+    return (area*r*r)/(544*867);  //queue density is returned
 }
 
 // function to generate data
-void generate(VideoCapture cap, Mat img,Mat h, int r , int c )
+void generate(VideoCapture cap, Mat img,Mat h,Size sz)
 {
-    Mat frame,frame_2,prvs;
+    Mat frame,frame_2;
+   
+    resize(img, img,sz );
     
-    img.resize((r ,c));
-    
-    cap >> frame ;
+    // cap >> frame ;
     Rect roi(831,211,544,867);
-    warpPerspective(frame,frame_2, h,Size(1920,1080));
-    frame = frame_2(roi);
+    // warpPerspective(frame,frame_2, h,Size(1920,1080));
+    // frame = frame_2(roi);
     
-    frame.resize((r , c));
+    // resize(frame, frame,sz );
     
-    cvtColor(frame, prvs, COLOR_BGR2GRAY);     // first frame is projected and cropped and stored in prvs matrix
-    
-    // resize(frame,frame,Size(r,c));
-
     int cnt = 0 ; // denotes the frame number
     double time;  // denotes time stamp of frame
     while(true)
     {
-        Mat nxt;
         cap >> frame ;
         if(frame.empty()) break ;
         cap >> frame ;
@@ -138,20 +77,12 @@ void generate(VideoCapture cap, Mat img,Mat h, int r , int c )
         
         frame_2 = frame_2(roi);
         
-        frame_2.resize((r , c));
-        
-        cvtColor(frame_2, nxt, COLOR_BGR2GRAY); //frame is projected and cropped and converted to gray scale
-
+        resize(frame_2, frame_2,sz );
+        //imshow("scaled", frame_2);
         cnt++;
-        //time=cnt/15;
-       //  resize(frame_2,frame_2,Size(r,c));
-       //  frame_2.resize((frame_2.rows/r , frame_2.cols/c));
         cout<<cnt<<","<<queue_density(frame_2,img)<<"\n";
-        
-        prvs = nxt; // frame_2 is coverted to black-white and stored in prvs for optical flow calculation for next iteration
-      
-       // int key = waitKey(30);
-       // if(key == 'q')  break;
+        //int key = waitKey(30);
+        //if(key == 'q')  break;
 
     }
 }
@@ -160,10 +91,10 @@ void generate(VideoCapture cap, Mat img,Mat h, int r , int c )
 int main(int argc, char** argv)
 {
     string vid = argv[1];
-    int r = atoi(argv[2]) , c  = atoi(argv[3]);
+    r = atoi(argv[2]) ; // c  = atoi(argv[3]);
     Mat image_proj;
     Mat image_src = imread("empty2.jpg" , IMREAD_GRAYSCALE);  // background image used in queue density, it has been extracted from the video itself
-
+    
     vector<Point2f> pts_src,pts_dst;
     pts_src={Point2f(985,245),Point2f(1292,255),Point2f(1520,1056),Point2f(349,1055)};   //hardcoded the boundary points of road
     pts_dst={Point2f(831,211),Point2f(1375,211),Point2f(1375,1078),Point2f(831,1078)};
@@ -172,18 +103,20 @@ int main(int argc, char** argv)
     Rect roi(831,211,544,867);
     Mat bg = image_proj(roi); // cropped image (544x867)
     
-    r = bg.rows/r ; c = bg.cols/c;
+    Size sz =  Size(bg.cols/r, bg.rows/r);
+    
     VideoCapture cap(vid);
 
     freopen("out_resolution.txt","w",stdout); // file in which data will be written
 
     cout<<"frame,queue density"<<"\n";
 
-    generate(cap,bg,h,r,c);  // function to generate data
+    generate(cap,bg,h,sz);  // function to generate data
 
 
     return 0;
 }
+
 
 
 
