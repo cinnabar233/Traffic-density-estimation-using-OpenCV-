@@ -5,24 +5,13 @@
 #include <iostream>
 #include <algorithm>
 #include<vector>
-#include<pthread.h>
-#include<fstream>
 #include<chrono>
-#include<math.h>
 using namespace cv;
 using namespace std;
 using namespace std::chrono;
-
-int thread_num;
 // returns the queue density in frame, by subracting the background image
-struct queue_params{
-    Mat frame ; Mat img ;
-    double area;
-};
-
 double queue_density(Mat frame , Mat img )
 {
-
     Mat gray,blurred,dst,thresh,dilated,contourOut,temp;
     vector<vector<Point> > contours;
 
@@ -53,89 +42,41 @@ double queue_density(Mat frame , Mat img )
 
     }
 
-    return (area/(544*867));  //queue density is returned
+
+    return area/(544*867);  //queue density is returned
 }
 
 
-void *f(void *x)
+// function to generate data
+void generate(VideoCapture cap, Mat img,Mat h)
 {
-    queue_params *z = (queue_params *)x;
-    double area = queue_density(z->frame, z->img /* , z.v*/);
-    double *val ;
-    val = &area;
-    z->area=area;
+    Mat frame,frame_2;
     
-    pthread_exit(NULL);
-}
-
-
-
-vector<double> run_queue_density(VideoCapture cap, Mat img,Mat h)
-{
-    Mat frame,frame_2,prvs ;
-    pthread_t threads[thread_num];
-    
-    vector<double> vals;
     cap >> frame ;
     Rect roi(831,211,544,867);
-
-    
     warpPerspective(frame,frame_2, h,Size(1920,1080));
     frame = frame_2(roi);
-    cvtColor(frame, prvs, COLOR_BGR2GRAY);     // first frame is projected and cropped and stored in prvs matrix
+
     int cnt = 0 ; // denotes the frame number
     double time;  // denotes time stamp of frame
     while(true)
     {
+        Mat nxt;
+        cap >> frame ;
+        if(frame.empty()) break ;
+        cap >> frame ;
+        if(frame.empty()) break ;
+        cap >> frame ;
+        if(frame.empty()) break ;     //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
         
-          //in order to shorten the length of video we pick every third frame  ( 15/3 = 5 fps)
-        
-        queue_params parts[thread_num];
-        
-        for(int i=0;i<thread_num;i++){
-            cap >> frame ;
-            if(frame.empty()) return vals ;
-            cap >> frame ;
-            if(frame.empty()) return vals ;
-            cap >> frame ;
-            if(frame.empty()) return vals ;
-            
-            warpPerspective(frame,frame_2, h,Size(1920,1080));
-            frame_2 = frame_2(roi);
-            
-            parts[i] = {frame_2.clone(),img.clone()};
-            
-            int l = pthread_create(&threads[i] , NULL , f , (void *)(&parts[i]));
-            
-            if(l){
-                cout << "could not make thread" ;
-                exit(-1);
-            }
-        }
-        
-        for(int i=0;i<thread_num;i++){
-            pthread_join(threads[i] , NULL);
-            vals.push_back(parts[i].area);
-        }
-        
-        cnt+=3*thread_num;
-        time=cnt/15;
+        warpPerspective(frame,frame_2, h,Size(1920,1080));
+        frame_2 = frame_2(roi);
+        cvtColor(frame_2, nxt, COLOR_BGR2GRAY); //frame is projected and cropped and converted to gray scale
 
+        cnt+=1;
 
-    }
-    return vals ;
-}
+        cout<<cnt<<","<<queue_density(frame_2,img)<<"\n" ;
 
-void generate(string vid, Mat img,Mat h)
-{
-    VideoCapture cap1(vid);
-    vector<double> v1 = run_queue_density(cap1 , img , h) ;
-
-    int cnt = 1 ;
-    for(auto x : v1)
-    {
-        cout << cnt << "," << x << "\n";
-        cnt++;
     }
 }
 
@@ -143,9 +84,7 @@ void generate(string vid, Mat img,Mat h)
 int main(int argc, char** argv)
 {
     auto start = high_resolution_clock::now();
-    
     string vid = argv[1];
-    thread_num = atoi(argv[2]);
     Mat image_proj;
     Mat image_src = imread("empty2.jpg" , IMREAD_GRAYSCALE);  // background image used in queue density, it has been extracted from the video itself
 
@@ -153,33 +92,27 @@ int main(int argc, char** argv)
     pts_src={Point2f(985,245),Point2f(1292,255),Point2f(1520,1056),Point2f(349,1055)};   //hardcoded the boundary points of road
     pts_dst={Point2f(831,211),Point2f(1375,211),Point2f(1375,1078),Point2f(831,1078)};
     Mat h = findHomography(pts_src,pts_dst);  // returns the homographic matrix
-    
     warpPerspective(image_src,image_proj, h,Size(1920,1080));   // transformed image (1920x1080)
-    
     Rect roi(831,211,544,867);
     Mat bg = image_proj(roi); // cropped image (544x867)
  
-    // VideoCapture cap(vid);
-   
-    freopen("out_temporal.txt","w",stdout); // file in which data will be written
-    cout<<"frame,queue density"<<"\n";
+    VideoCapture cap(vid);
 
-    generate(vid,bg,h);  // function to generate data
-    //out.close();
-    // fclose(stdout);
+    freopen("out_bench.txt","w",stdout); // file in which data will be written
+
+    cout<<"frame,queue density"<<"\n" ; //dynamic density"<<"\n";
+
+    generate(cap,bg,h);  // function to generate data
+
     auto stop = high_resolution_clock::now();
     
     
     auto duration = duration_cast<microseconds>(stop - start);
     
-    //cout << duration.count();
+   // cout << duration.count();
+
     return 0;
 }
-
-
-
-
-
 
 
 

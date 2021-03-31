@@ -19,7 +19,6 @@ int thread_num=3;
 struct dyanamic_params{
     Mat nxt ; Mat prv ;
     double area;
-    //vector<double> &v;
 };
 
 // returns the dyanamic density in "nxt" frame, using optical flow method
@@ -70,7 +69,6 @@ double dynamic_density( Mat nxt ,Mat prvs )
                 }
         }
 
-//imshow("dynamic_density", x);
       return area/(544*867);  //dyanamic density is returned
 
 }
@@ -151,9 +149,6 @@ vector<double> run_dynamic_density(VideoCapture cap, Mat img,Mat h)
        }
        vals. push_back(area);
         
-        
-       // cout<<time<<","<<queue_density(frame_2,img)<<","<<dynamic_density(nxt, prvs)<<"\n";
-
     }
     return vals ;
 
@@ -193,7 +188,6 @@ int main(int argc, char** argv)
     Rect roi(831,211,544,867);
     Mat bg = image_proj(roi); // cropped image (544x867)
  
-    // VideoCapture cap(vid);
    
     freopen("out_3.txt","w",stdout); // file in which data will be written
     cout<<"frame,dynamic density"<<"\n";

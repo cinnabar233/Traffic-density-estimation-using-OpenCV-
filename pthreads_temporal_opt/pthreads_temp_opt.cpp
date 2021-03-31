@@ -19,7 +19,6 @@ int thread_num=3;
 struct dyanamic_params{
     Mat nxt ; Mat prv ;
     double area;
-    //vector<double> &v;
 };
 
 // returns the dyanamic density in "nxt" frame, using optical flow method
@@ -70,7 +69,6 @@ double dynamic_density( Mat nxt ,Mat prvs )
                 }
         }
 
-//imshow("dynamic_density", x);
       return area/(544*867);  //dyanamic density is returned
 
 }

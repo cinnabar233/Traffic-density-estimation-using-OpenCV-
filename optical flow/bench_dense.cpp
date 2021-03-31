@@ -9,46 +9,6 @@
 using namespace cv;
 using namespace std;
 
-// returns the queue density in frame, by subracting the background image
-double queue_density(Mat frame , Mat img )
-{
-    Mat gray,blurred,dst,thresh,dilated,contourOut,temp;
-    vector<vector<Point> > contours;
-
-   cvtColor(frame, gray, COLOR_BGR2GRAY);   // frame is converted to gray scale
-                                                  
-   absdiff(gray,img, temp);     // absolute difference is taken b/w current frame and background image
-
-   dilate(temp,temp, Mat(), Point(-1, -1), 2, 1, 1);
-                                                        
-   GaussianBlur(temp, temp, cv::Size(0, 0), 2);   // image is dilated and blurred for better enclosure of vehicles
-   
-   //addWeighted(temp, 1.5, dst, -0.5, 0, dst);
-
-   threshold(temp,  thresh ,40, 255, THRESH_BINARY);  // gray image is converted to black and white image for finding contours
-   
-   findContours( thresh, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-
-   Mat x=  Mat::zeros(img.rows, img.cols, CV_8UC3);
-   double area = 0 ;
-   for(int idx = 0 ; idx < contours.size(); idx++)
-       {
-        if(contourArea(contours[idx])>5000)  // area less than 5000 is mostly noise in image
-           {
-                Scalar color( 0, 255, 0);
-                drawContours( x, contours, idx, color, FILLED, 8 ); // filled countours are drawn in frame x, for visualisation of recognised contours
-                area += contourArea(contours[idx]);
-           }
-
-    }
-
-          //imshow("final", x);     // displays contours in the frame
-         // imshow("queue_density", thresh);
-         //  imshow("original", frame);              //original frame
-
-    return area/(544*867);  //queue density is returned
-}
-
 // returns the dyanamic density in "nxt" frame, using optical flow method
 double dynamic_density( Mat nxt ,Mat prvs )
 {
@@ -132,12 +92,9 @@ void generate(VideoCapture cap, Mat img,Mat h)
         cnt+=3;
         time=(double)cnt/15;
 
-        cout<<time/*<<","<<queue_density(frame_2,img)*/<<","<<dynamic_density(nxt, prvs)<<"\n";
+        cout<<time<<","<<dynamic_density(nxt, prvs)<<"\n";
         
         prvs = nxt; // frame_2 is coverted to black-white and stored in prvs for optical flow calculation for next iteration
-      
-        // int key = waitKey(30);
-       //  if(key == 'q')  break;
 
     }
 }

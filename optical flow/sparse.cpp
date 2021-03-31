@@ -30,8 +30,6 @@ void sparse_flow(VideoCapture capture,Mat h)
     
     cvtColor(old_frame, old_gray, COLOR_BGR2GRAY);
     goodFeaturesToTrack(old_gray, p0, 100, 0.3, 7, Mat(), 7, false, 0.04);
-    // Create a mask image for drawing purposes
-  //  Mat mask= Mat::zeros(old_frame.size(), old_frame.type());
     
     Mat ori;
     Scalar color( 255,255,255);
@@ -69,8 +67,6 @@ void sparse_flow(VideoCapture capture,Mat h)
                 if(dist>25){
                     cnt++;
                     good_new.push_back(p1[i]);
-                    // draw the tracks
-                 //   line(mask,p1[i], p0[i], color, 2);
                     circle(frame, p1[i], 10, color, -1);
                 }
             }
