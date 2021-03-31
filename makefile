@@ -14,4 +14,5 @@ clean:
 run :
 	./exec $(args) 
 main2 : 
-	g++ main2.cpp -o example -pthread -std=c++11  `pkg-config --cflags --libs opencv4`
+	g++ main2.cpp -o exec2 -pthread -std=c++11  `pkg-config --cflags --libs opencv4`
+
