@@ -14,3 +14,7 @@
 - Create the C++ executable by typing 'make main2'.
 - To run the C++ executable, type `make run args=<filename>` where filename is either `empty` or `traffic`.
 - To delete the C++ executable and the modified photographs, type `make clean`.
+
+
+## Trade-off analysis for software design choices 
+- Compare runtime and error over various design and implementation choices such as frame-skipping, concurrency and resolution modification.
